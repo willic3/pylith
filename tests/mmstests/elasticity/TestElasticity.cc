@@ -111,6 +111,8 @@ pylith::mmstests::TestElasticity::_initialize(void) {
     _problem->setStartTime(_data->startTime);
     _problem->setEndTime(_data->endTime);
     _problem->setInitialTimeStep(_data->timeStep);
+    _problem->setFormulation(_data->isExplicit ?
+                             pylith::problems::TimeDependent::EXPLICIT : pylith::problems::TimeDependent::IMPLICIT);
 
     // Set up solution field.
     CPPUNIT_ASSERT( (!_data->isExplicit && 1 == _data->numSolnSubfields) ||

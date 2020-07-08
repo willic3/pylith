@@ -29,6 +29,7 @@ test_isotropiclinearelasticity_SOURCES = \
 	TestIsotropicLinearElasticity2D_Gravity.cc \
 	TestIsotropicLinearElasticity2D_GravityRefState.cc \
 	TestIsotropicLinearElasticity2D_BodyForce.cc \
+	TestIsotropicLinearElasticity2D_PlanePWave.cc \
 	test_driver.cc
 
 
