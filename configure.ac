@@ -311,6 +311,9 @@ AC_CONFIG_FILES([Makefile
 		tests/fullscale/viscoelasticity/nofaults-3d/Makefile
 		tests/fullscale/petsc/Makefile
 		tests/fullscale/eqinfo/Makefile
+		tests/manual/Makefile
+		tests/manual/petsc/Makefile
+		tests/manual/petsc/sliderblock/Makefile
         	developer/Makefile
 		doc/Makefile
 		doc/install/Makefile

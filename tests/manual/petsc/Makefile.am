@@ -17,8 +17,6 @@
 #
 
 SUBDIRS = \
-	2d \
-	3d \
-	petsc
+	sliderblock
 
 # End of file 
