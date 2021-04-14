@@ -418,9 +418,14 @@ pylith::feassemble::_IntegratorInterface::computeResidual(pylith::topology::Fiel
     const keysmap_t& keysmap = patches->getKeys();
     for (keysmap_t::const_iterator iter = keysmap.begin(); iter != keysmap.end(); ++iter) {
         PetscHashFormKey weakFormKeys[3];
-        weakFormKeys[0] = iter->second.negative.petscKey(solution);
-        weakFormKeys[1] = iter->second.positive.petscKey(solution);
         weakFormKeys[2] = iter->second.cohesive.petscKey(solution);
+
+        // :KLUDGE: Weak form kernels for displacement subfield are associated with weakFormKeys 0 and 1,
+        // which need label/value from cohesive cell to match setting of kernels in setWeakFormKernels().
+        weakFormKeys[0].label = weakFormKeys[2].label;
+        weakFormKeys[0].value = weakFormKeys[2].value;
+        weakFormKeys[1].label = weakFormKeys[2].label;
+        weakFormKeys[1].value = weakFormKeys[2].value;
 
         const PetscInt labelValue = weakFormKeys[2].value;
         PetscIS cohesiveCellIS = NULL;
@@ -444,65 +449,6 @@ pylith::feassemble::_IntegratorInterface::computeResidual(pylith::topology::Fiel
         err = ISRestoreIndices(cohesiveCellIS, &cohesiveCells);PYLITH_CHECK_ERROR(err);
         err = ISDestroy(&cohesiveCellIS);PYLITH_CHECK_ERROR(err);
     } // for
-
-#if 0
-    PetscIS labelValueIS = NULL;
-    PetscInt numLabelValues = 0;
-    const PetscInt* labelValues = NULL;
-    err = DMGetLabelIdIS(dmSoln, integrator->getLabelName(), &labelValueIS);PYLITH_CHECK_ERROR(err);
-    err = ISGetSize(labelValueIS, &numLabelValues);PYLITH_CHECK_ERROR(err);assert(numLabelValues > 0);
-    err = ISGetIndices(labelValueIS, &labelValues);PYLITH_CHECK_ERROR(err);assert(labelValues);
-    for (PetscInt iValue = 0; iValue < numLabelValues; ++iValue) {
-        const PetscInt labelValue = labelValues[iValue];
-
-        PetscIS cohesiveCellIS = NULL;
-        PetscInt numCohesiveCells = 0;
-        const PetscInt* cohesiveCells = NULL;
-        err = DMGetStratumIS(dmSoln, integrator->getLabelName(), labelValue, &cohesiveCellIS);PYLITH_CHECK_ERROR(err);
-        err = ISGetSize(cohesiveCellIS, &numCohesiveCells);PYLITH_CHECK_ERROR(err);assert(numCohesiveCells > 0);
-        err = ISGetIndices(cohesiveCellIS, &cohesiveCells);PYLITH_CHECK_ERROR(err);assert(cohesiveCells);
-        assert(pylith::topology::MeshOps::isCohesiveCell(dmSoln, cohesiveCells[0]));
-
-        PetscHashFormKey weakFormKeys[3];
-        weakFormKeys[0].label = NULL;
-        weakFormKeys[0].value = 0;
-        weakFormKeys[0].field = 0;
-        weakFormKeys[1].label = NULL;
-        weakFormKeys[1].value = 0;
-        weakFormKeys[1].field = 0;
-        weakFormKeys[2].label = NULL;
-        weakFormKeys[2].value = 0;
-        weakFormKeys[2].field = 0;
-
-        // Get auxiliary data
-        err = DMSetAuxiliaryVec(dmSoln, NULL, 0, auxiliaryField->localVector());PYLITH_CHECK_ERROR(err);
-
-        assert(solution.localVector());
-        assert(residual->localVector());
-        err = DMPlexComputeResidual_Hybrid_Internal(dmSoln, weakFormKeys, cohesiveCellIS, t, solution.localVector(),
-                                                    solutionDot.localVector(), t,
-                                                    residual->localVector(), NULL);PYLITH_CHECK_ERROR(err);
-        err = ISRestoreIndices(cohesiveCellIS, &cohesiveCells);PYLITH_CHECK_ERROR(err);
-        err = ISDestroy(&cohesiveCellIS);PYLITH_CHECK_ERROR(err);
-    } // for
-    err = ISRestoreIndices(labelValueIS, &labelValues);PYLITH_CHECK_ERROR(err);
-    err = ISDestroy(&labelValueIS);PYLITH_CHECK_ERROR(err);
-#endif
-
-#if 0
-    PetscDS prob = NULL;
-    err = DMGetCellDS(dmSoln, cohesiveCells[0], &prob);PYLITH_CHECK_ERROR(err);
-    // Compute the local residual
-    for (size_t i = 0; i < kernels.size(); ++i) {
-        const PetscInt i_field = solution.subfieldInfo(kernels[i].subfield.c_str()).index;
-        err = PetscDSSetBdResidual(prob, i_field, kernels[i].r0, kernels[i].r1);PYLITH_CHECK_ERROR(err);
-    } // for
-    err = DMPlexComputeResidual_Hybrid_Internal(dmSoln, keys, cohesiveCellsIS, t, solution.localVector(),
-                                                solutionDot.localVector(), t,
-                                                residual->localVector(), NULL);PYLITH_CHECK_ERROR(err);
-    err = ISRestoreIndices(cohesiveCellsIS, &cellIndices);PYLITH_CHECK_ERROR(err);
-    err = ISDestroy(&cohesiveCellsIS);PYLITH_CHECK_ERROR(err);
-#endif
 
     PYLITH_METHOD_END;
 } // computeResidual
@@ -625,7 +571,7 @@ pylith::feassemble::_IntegratorInterface::setWeakFormKernels(const pylith::feass
     } // DEBUGGING
 
     PYLITH_METHOD_END;
-} // TMP_setWeakFormKernels
+} // setWeakFormKernels
 
 
 // ---------------------------------------------------------------------------------------------------------------------
