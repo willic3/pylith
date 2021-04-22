@@ -28,16 +28,26 @@ class Tri(object):
         "nvertices": 88,
     }
     MATERIALS = {
-        "elastic_xpos": {
-            "ncells": 64,
+        "mat_xneg": {
+            "ncells": 30,
             "ncorners": 3,
-            "nvertices": 45,
+            "nvertices": 26,
         },
-        "elastic_xneg": {
-            "ncells": 60,
+        "mat_xmid": {
+            "ncells": 30,
             "ncorners": 3,
-            "nvertices": 43,
-        }
+            "nvertices": 26,
+        },
+        "mat_xposypos": {
+            "ncells": 32,
+            "ncorners": 3,
+            "nvertices": 25,
+        },
+        "mat_xposyneg": {
+            "ncells": 32,
+            "ncorners": 3,
+            "nvertices": 25,
+        },
     }
     FAULTS = {
         "fault": {
@@ -79,16 +89,26 @@ class Quad(object):
         "nvertices": 90,
     }
     MATERIALS = {
-        "elastic_xpos": {
-            "ncells": 32,
+        "mat_xneg": {
+            "ncells": 16,
             "ncorners": 4,
-            "nvertices": 45,
+            "nvertices": 27,
         },
-        "elastic_xneg": {
-            "ncells": 32,
+        "mat_xmid": {
+            "ncells": 16,
             "ncorners": 4,
-            "nvertices": 45,
-        }
+            "nvertices": 27,
+        },
+        "mat_xposypos": {
+            "ncells": 16,
+            "ncorners": 4,
+            "nvertices": 25,
+        },
+        "mat_xposyneg": {
+            "ncells": 16,
+            "ncorners": 4,
+            "nvertices": 25,
+        },
     }
     FAULTS = {
         "fault": {
