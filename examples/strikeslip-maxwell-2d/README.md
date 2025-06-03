@@ -51,3 +51,19 @@ To run the example:
 # Simple elastic problem
 pylith step04_slip_elastic.cfg
 ```
+
+Further notes on Step 4:
+The normalization factor for shear modulus should be 2.25 GPa for a Vs of 3.0 km/s;
+however, using this value requires 118 KSP iterations to converge. Below are listed some
+normalization facts and the resulting number of KSP iterations:
+
+Factor (GPa)  Iterations
+30              137
+2.25            118
+1.50            105
+1.00            64
+0.90            57
+0.50            47
+0.40            46
+
+Any values below 0.30 GPa start increasing the number of iterations again.
