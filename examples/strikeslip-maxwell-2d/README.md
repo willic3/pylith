@@ -109,7 +109,7 @@ pylith step07_slip_maxwell.cfg
 
 ## Step 8: Refinement level 2, 2nd order, BDF order 2, adaptive.
 
-This example is the second in a set of simulations where we try different time stepping schemes with
+This example is the third in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
 of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
 BDF order 2 with adaptive time stepping.
@@ -122,7 +122,7 @@ pylith step08_slip_maxwell.cfg
 
 ## Step 9: Refinement level 2, 2nd order, BDF order 3, adaptive.
 
-This example is the second in a set of simulations where we try different time stepping schemes with
+This example is the 4th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
 of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
 BDF order 3 with adaptive time stepping.
@@ -135,7 +135,7 @@ pylith step09_slip_maxwell.cfg
 
 ## Step 10: Refinement level 2, 2nd order, BDF order 4, adaptive.
 
-This example is the second in a set of simulations where we try different time stepping schemes with
+This example is the 5th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
 of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
 BDF order 4 with adaptive time stepping.
@@ -148,7 +148,7 @@ pylith step10_slip_maxwell.cfg
 
 ## Step 11: Refinement level 2, 2nd order, BDF order 5, adaptive.
 
-This example is the second in a set of simulations where we try different time stepping schemes with
+This example is the 6th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
 of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
 BDF order 5 with adaptive time stepping.
@@ -161,7 +161,7 @@ pylith step11_slip_maxwell.cfg
 
 ## Step 12: Refinement level 2, 2nd order, BDF order 6, adaptive.
 
-This example is the second in a set of simulations where we try different time stepping schemes with
+This example is the 7th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
 of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
 BDF order 6 with adaptive time stepping.
@@ -170,4 +170,17 @@ To run the example:
 ```bash
 # Simple Maxwell  problem
 pylith step12_slip_maxwell.cfg
+```
+
+## Step 13: Refinement level 2, 2nd order, backwards Euler, adaptive.
+
+This example is the 8th in a set of simulations where we try different time stepping schemes with
+adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
+of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+backwards Euler with adaptive time stepping.
+
+To run the example:
+```bash
+# Simple Maxwell  problem
+pylith step13_slip_maxwell.cfg
 ```

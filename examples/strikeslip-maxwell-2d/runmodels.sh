@@ -11,3 +11,4 @@ pylith step09_slip_maxwell.cfg 2>&1 | tee step09_slip_maxwell.log
 pylith step10_slip_maxwell.cfg 2>&1 | tee step10_slip_maxwell.log
 pylith step11_slip_maxwell.cfg 2>&1 | tee step11_slip_maxwell.log
 pylith step12_slip_maxwell.cfg 2>&1 | tee step12_slip_maxwell.log
+pylith step13_slip_maxwell.cfg 2>&1 | tee step13_slip_maxwell.log
