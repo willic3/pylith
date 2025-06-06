@@ -66,14 +66,12 @@ Factor (GPa)  Iterations
 
 Any values below 0.30 GPa start increasing the number of iterations again.
 
-## Step 5: Static Coseismic Slip with Maxwell rheology, different normalization, time steps, and 2nd order.
+## Step 5: Static Coseismic Slip with Maxwell rheology, time steps, and 2nd order.
 
-This example is exactly like Step 3, but we use different normalization for the shear modulus
-and length scale. The normalizations used provide much better convergence in the linear solution.
-We also use 2nd order for the displacement solution. This model is used as a reference model for
-further viscoelastic time stepping tests. Note that for the output we provide output at one level
-higher to capture the higher accuracy of second order, and we use a different name to indicate
-this is a reference model.
+This example is exactly like Step 3, but we use 2nd order for the displacement solution.
+This model was our original reference model for further viscoelastic time stepping tests.
+Note that for the output we provide output at one level higher to capture the higher accuracy
+of second order, and we use a different name to indicate this is a reference model.
 
 To run the example:
 ```bash
@@ -85,7 +83,7 @@ pylith step05_slip_maxwell.cfg
 
 This example is the first in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 Crank-Nicholson with adaptive time stepping.
 
 To run the example:
@@ -98,7 +96,7 @@ pylith step06_slip_maxwell.cfg
 
 This example is the second in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 BDF order 1 with adaptive time stepping.
 
 To run the example:
@@ -111,7 +109,7 @@ pylith step07_slip_maxwell.cfg
 
 This example is the third in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 BDF order 2 with adaptive time stepping.
 
 To run the example:
@@ -124,7 +122,7 @@ pylith step08_slip_maxwell.cfg
 
 This example is the 4th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 BDF order 3 with adaptive time stepping.
 
 To run the example:
@@ -137,7 +135,7 @@ pylith step09_slip_maxwell.cfg
 
 This example is the 5th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 BDF order 4 with adaptive time stepping.
 
 To run the example:
@@ -150,7 +148,7 @@ pylith step10_slip_maxwell.cfg
 
 This example is the 6th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 BDF order 5 with adaptive time stepping.
 
 To run the example:
@@ -163,7 +161,7 @@ pylith step11_slip_maxwell.cfg
 
 This example is the 7th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
 BDF order 6 with adaptive time stepping.
 
 To run the example:
@@ -176,11 +174,40 @@ pylith step12_slip_maxwell.cfg
 
 This example is the 8th in a set of simulations where we try different time stepping schemes with
 adaptive time stepping. All of these simulations use a refinement level of 2, and displacement basis order
-of 2. They are meant to be compared to the higher resolution reference model (step05). This one uses
-backwards Euler with adaptive time stepping.
+of 2. They are meant to be compared to the higher resolution reference model (step05 or step15). This one uses
+backward Euler with adaptive time stepping.
 
 To run the example:
 ```bash
 # Simple Maxwell  problem
 pylith step13_slip_maxwell.cfg
+```
+
+## Step 14: Static Coseismic Slip with Maxwell rheology, small fixed time steps, and 2nd order.
+
+This example is exactly like Step 5, but we use a much smaller fixed size time step of 0.25 year.
+This model was one candidate for our reference model, but the model from Step 15 below seems to
+provide a better solution. Note that for the output we provide output at one level
+higher to capture the higher accuracy of second order, and we use a different name to indicate
+this is a reference model.
+
+To run the example:
+```bash
+# Simple Maxwell  problem
+pylith step14_slip_maxwell.cfg
+```
+
+## Step 15: Static Coseismic Slip with Maxwell rheology, modified adaptive time stepping, and 2nd order.
+
+This example is similar to Step 14 above, but we use adaptive time stepping, combined with a reduced safety
+factor for the adaptive stepping (from the 0.9 default to 0.2), and a smaller initial time step size (0.05 year).
+This means that the time step sizes at the beginning of the solution are very small (when deformation
+is largest), thus providing a much more accurate solution. This model is our current reference model.
+Note that for the output we provide output at one level higher to capture the higher accuracy of second order,
+and we use a different name to indicate this is a reference model.
+
+To run the example:
+```bash
+# Simple Maxwell  problem
+pylith step15_slip_maxwell.cfg
 ```
