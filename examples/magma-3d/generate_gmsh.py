@@ -12,7 +12,8 @@ import coordsys
 class App(GenerateMesh):
     """
     Generate a tetrahedral mesh of the Tongariro volcano region, New Zealand,
-    with topography from a GMT .grd file and a spherical cavity beneath the summit.
+    with topography from a GMT .grd file and a spherical shell (different material)
+    surrounding a hollow spherical cavity beneath the summit.
 
     Coordinates are meters in a local Transverse Mercator projection
     (x=east, y=north, z=up, z=0 at mean sea level).
@@ -38,13 +39,14 @@ class App(GenerateMesh):
     DX_TOPO_GRID = 1.0 * KM
 
     # --- Spherical cavity ---------------------------------------------------
-    CAVITY_RADIUS = 2.0 * KM
+    SPHERE_RADIUS_OUTER = 2.0 * KM  # outer surface of the shell
+    SPHERE_RADIUS_INNER = 1.0 * KM  # surface of the hollow cavity
     CAVITY_DEPTH = 5.0 * KM  # depth of the sphere CENTER below mean sea level
     CAVITY_X = 0.0
     CAVITY_Y = 0.0  # directly beneath the origin (summit)
 
     # --- Discretization size ------------------------------------------------
-    DX_CAVITY = 400.0  # element size on the cavity surface
+    DX_CAVITY = 300.0  # element size on the inner and outer sphere surfaces
     DX_CAVITY_DIST_MIN = 1.0 * KM  # size held at DX_CAVITY within this distance
     DX_CAVITY_DIST_MAX = 15.0 * KM  # reaches DX_MAX at this distance
     DX_TOPO = 2.0 * KM  # element size at the ground surface
@@ -92,29 +94,55 @@ class App(GenerateMesh):
         )
         above_ground = [entity for entity in extruded if entity[0] == 3]
 
-        cavity = gmsh.model.occ.add_sphere(
-            self.CAVITY_X, self.CAVITY_Y, -self.CAVITY_DEPTH, self.CAVITY_RADIUS
-        )
+        center = (self.CAVITY_X, self.CAVITY_Y, -self.CAVITY_DEPTH)
 
+        # Surrounding material: box below the topography with a spherical hole
+        # of the outer radius.
+        outer_hole = gmsh.model.occ.add_sphere(*center, self.SPHERE_RADIUS_OUTER)
         tags, _ = gmsh.model.occ.cut(
             [(3, box)],
-            above_ground + [(3, cavity)],
+            above_ground + [(3, outer_hole)],
             removeObject=True,
             removeTool=True,
         )
         if len(tags) != 1:
             raise RuntimeError(f"Expected 1 volume after cutting, got {tags}.")
+        domain = tags[0]
+
+        # Shell material: outer sphere minus inner sphere (inner sphere is hollow).
+        outer_sphere = gmsh.model.occ.add_sphere(*center, self.SPHERE_RADIUS_OUTER)
+        inner_sphere = gmsh.model.occ.add_sphere(*center, self.SPHERE_RADIUS_INNER)
+        tags, _ = gmsh.model.occ.cut(
+            [(3, outer_sphere)],
+            [(3, inner_sphere)],
+            removeObject=True,
+            removeTool=True,
+        )
+        if len(tags) != 1:
+            raise RuntimeError(f"Expected 1 shell volume, got {tags}.")
+        shell = tags[0]
+
+        # Make the shell and surrounding volume conformal across the outer sphere.
+        _, out_map = gmsh.model.occ.fragment([domain], [shell])
+        domain_tags = [tag for dim, tag in out_map[0] if dim == 3]
+        shell_tags = [tag for dim, tag in out_map[1] if dim == 3]
+        if len(domain_tags) != 1 or len(shell_tags) != 1:
+            raise RuntimeError(
+                f"Unexpected fragment result: domain={out_map[0]}, shell={out_map[1]}"
+            )
         gmsh.model.occ.synchronize()
 
-        self.domain_volume = [tags[0][1]]
-        self._identify_boundaries(self.domain_volume[0])
+        self.domain_volume = domain_tags
+        self.shell_volume = shell_tags
+        self._identify_boundaries(self.domain_volume[0], self.shell_volume[0])
 
-    def _identify_boundaries(self, volume):
+    def _identify_boundaries(self, volume, shell_volume):
         """Classify the boundary surfaces of the volume by location."""
         tol = 10.0  # m
         hx = self.DOMAIN_X / 2
         hy = self.DOMAIN_Y / 2
-        r = self.CAVITY_RADIUS
+        r = self.SPHERE_RADIUS_OUTER
+        r_inner = self.SPHERE_RADIUS_INNER
         zc = -self.CAVITY_DEPTH
 
         self.surface_west = []
@@ -123,7 +151,8 @@ class App(GenerateMesh):
         self.surface_north = []
         self.surface_bottom = []
         self.surface_top = []
-        self.surface_cavity = []
+        self.surface_interface = []  # outer sphere, between shell and surrounding
+        self.surface_cavity = []  # inner sphere, boundary of the hollow
 
         boundary = gmsh.model.getBoundary(
             [(3, volume)], combined=False, oriented=False
@@ -142,7 +171,7 @@ class App(GenerateMesh):
                 and zmin > zc - r - tol
                 and zmax < zc + r + tol
             ):
-                self.surface_cavity.append(tag)
+                self.surface_interface.append(tag)
             elif flat(xmin, xmax, -hx):
                 self.surface_west.append(tag)
             elif flat(xmin, xmax, hx):
@@ -156,6 +185,16 @@ class App(GenerateMesh):
             else:
                 self.surface_top.append(tag)
 
+        # The inner sphere is the boundary of the shell that is not the outer sphere.
+        for dim, tag in gmsh.model.getBoundary(
+            [(3, shell_volume)], combined=False, oriented=False
+        ):
+            xmin, ymin, zmin, xmax, ymax, zmax = gmsh.model.getBoundingBox(dim, tag)
+            if (xmax - xmin) < 2.0 * r_inner + 2.0 * tol:
+                self.surface_cavity.append(tag)
+            elif tag not in self.surface_interface:
+                raise RuntimeError(f"Unexpected shell boundary surface {tag}.")
+
         groups = {
             "west": self.surface_west,
             "east": self.surface_east,
@@ -163,6 +202,7 @@ class App(GenerateMesh):
             "north": self.surface_north,
             "bottom": self.surface_bottom,
             "top": self.surface_top,
+            "interface": self.surface_interface,
             "cavity": self.surface_cavity,
         }
         if self.debug:
@@ -271,7 +311,10 @@ class App(GenerateMesh):
     # ------------------------------------------------------------------
     def mark(self):
         """Mark geometry for materials, boundary conditions, etc."""
-        materials = (MaterialGroup(tag=1, entities=self.domain_volume),)
+        materials = (
+            MaterialGroup(tag=1, entities=self.domain_volume),
+            MaterialGroup(tag=2, entities=self.shell_volume),
+        )
         for material in materials:
             material.create_physical_group()
 
@@ -283,6 +326,7 @@ class App(GenerateMesh):
             BoundaryGroup(name="boundary_bottom", tag=14, dim=2, entities=self.surface_bottom),
             BoundaryGroup(name="boundary_top", tag=15, dim=2, entities=self.surface_top),
             BoundaryGroup(name="boundary_cavity", tag=20, dim=2, entities=self.surface_cavity),
+            BoundaryGroup(name="interface_shell", tag=21, dim=2, entities=self.surface_interface),
         )
         for group in face_groups:
             group.create_physical_group()
@@ -295,9 +339,11 @@ class App(GenerateMesh):
 
         field = gmsh.model.mesh.field
 
-        # Size as a function of distance from the cavity.
+        # Size as a function of distance from the inner and outer sphere surfaces.
         dist_cavity = field.add("Distance")
-        field.setNumbers(dist_cavity, "SurfacesList", self.surface_cavity)
+        field.setNumbers(
+            dist_cavity, "SurfacesList", self.surface_cavity + self.surface_interface
+        )
         field.setNumber(dist_cavity, "Sampling", 100)
         size_cavity = field.add("Threshold")
         field.setNumber(size_cavity, "InField", dist_cavity)
