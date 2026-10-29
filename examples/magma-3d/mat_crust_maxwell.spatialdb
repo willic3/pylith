@@ -1,0 +1,23 @@
+// This spatial database specifies the distribution of material
+// properties. In this case, the material properties are uniform.
+#SPATIAL.ascii 1
+SimpleDB {
+  num-values = 16 // number of material property values
+  value-names =  density vs vp viscosity viscous_strain_xx viscous_strain_yy viscous_strain_zz viscous_strain_xy viscous_strain_yz viscous_strain_xz total_strain_xx total_strain_yy total_strain_zz total_strain_xy total_strain_yz total_strain_xz // names of the material property and state variable values
+  value-units =  kg/m**3  km/s  km/s Pa*s none none none none none none none none none none none none // units
+  num-locs = 1 // number of locations
+  data-dim = 0
+  space-dim = 3
+  cs-data = geographic {
+    crs-string = +proj=tmerc +datum=WGS84 +lon_0=-175.6 +lat_0=-39.1 +k=0.9996 +units=km
+  } // cs-data
+}
+// Columns are
+// (1) x coordinate (m)
+// (2) y coordinate (m)
+// (3) z coordinate (m)
+// (4) density (kg/m^3)
+// (5) vs (km/s)
+// (6) vp (km/s)
+// (7) viscosity (Pa*s)
+0.0  0.0  0.0   2400.0  2.32737  4.04832 1.0e20 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
