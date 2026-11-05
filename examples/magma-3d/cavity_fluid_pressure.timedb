@@ -1,0 +1,7 @@
+#TIME HISTORY ascii
+TimeHistory {
+  num-points =      2
+  time-units = year
+}
+  0.000000e+00  0.000000e+00
+  5.000000e+00  1.000000e+00
